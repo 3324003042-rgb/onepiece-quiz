@@ -1,1 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>你是哪个海贼王角色？</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "PingFang SC", sans-serif; background: #0b2545; color: #f5e9d0; min-height: 100vh; }
+  .screen { display: none; padding: 24px 20px 60px; min-height: 100vh; }
+  .screen.active { display: block; }
+  #home { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #home h1 { font-size: 26px; margin-bottom: 12px; line-height: 1.4; }
+  #home .sub { color: #c9a86a; font-size: 14px; margin-bottom: 28px; }
+  .dims { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 36px; }
+  .dims span { background: rgba(201,168,106,.15); border: 1px solid rgba(201,168,106,.4); padding: 6px 12px; border-radius: 999px; font-size: 13px; }
+  .btn-primary { font-size: 17px; padding: 14px 44px; border: none; border-radius: 999px; background: linear-gradient(135deg, #c0392b, #e67e22); color: #fff; font-weight: 700; cursor: pointer; }
+  .progress-wrap { margin-bottom: 24px; }
+  .progress-track { height: 8px; background: rgba(201,168,106,.2); border-radius: 999px; overflow: hidden; }
+  .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #c0392b, #e67e22); transition: width .3s; }
+  .progress-count { text-align: right; color: #c9a86a; font-size: 13px; margin-top: 6px; }
+  .q-title { font-size: 19px; line-height: 1.6; margin-bottom: 24px; }
+  .options { display: flex; flex-direction: column; gap: 12px; }
+  .opt { display: flex; align-items: center; gap: 12px; text-align: left; padding: 16px 18px; background: rgba(255,255,255,.05); border: 1px solid rgba(201,168,106,.3); border-radius: 12px; color: #f5e9d0; font-size: 15px; cursor: pointer; }
+  .opt.selected { background: rgba(192,57,43,.25); border-color: #c0392b; }
+  .opt .tag { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(201,168,106,.25); font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .similarity { text-align: center; color: #e67e22; font-weight: 700; letter-spacing: 2px; margin-bottom: 8px; }
+  .char-name { text-align: center; font-size: 30px; margin-bottom: 6px; }
+  .char-crew { text-align: center; color: #c9a86a; font-size: 14px; margin-bottom: 12px; }
+  .keywords { text-align: center; margin-bottom: 36px; }
+  .keywords span { color: #c9a86a; font-size: 14px; margin: 0 6px; }
+  .sec-title { text-align: center; color: #e67e22; font-size: 19px; margin-bottom: 20px; }
+  canvas { display: block; margin: 0 auto 24px; }
+  .score-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+  .score-item { display: grid; grid-template-columns: 76px 1fr 34px; align-items: center; gap: 10px; font-size: 14px; }
+  .score-item .track { height: 9px; background: rgba(201,168,106,.2); border-radius: 999px; overflow: hidden; }
+  .score-item .fill { height: 100%; background: linear-gradient(90deg, #c0392b, #e67e22); }
+  .score-item .num { text-align: right; color: #c9a86a; font-size: 12px; }
+  .career-card { background: rgba(255,255,255,.05); border: 1px solid rgba(201,168,106,.3); border-radius: 18px; padding: 24px 20px; margin-bottom: 36px; }
+  .role-tag { display: inline-block; background: linear-gradient(135deg,#c0392b,#e67e22); padding: 6px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; margin-bottom: 20px; }
+  .block { margin-bottom: 18px; }
+  .block h3 { font-size: 14px; color: #c9a86a; margin-bottom: 8px; }
+  .jobs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .jobs span { background: rgba(201,168,106,.15); border: 1px solid rgba(201,168,106,.4); padding: 6px 12px; border-radius: 999px; font-size: 13px; }
+  .block p { font-size: 14px; line-height: 1.7; }
+  .avoid { color: #e74c3c !important; }
+  .other-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+  .other-card { background: rgba(255,255,255,.05); border: 1px solid rgba(201,168,106,.25); border-radius: 14px; padding: 16px; text-align: center; }
+  .other-card h3 { font-size: 16px; margin-bottom: 4px; }
+  .other-card p { color: #c9a86a; font-size: 12px; margin-bottom: 8px; }
+  .btn-restart { display: block; margin: 0 auto; padding: 13px 40px; border: 1px solid #c9a86a; border-radius: 999px; background: transparent; color: #c9a86a; font-size: 15px; cursor: pointer; }
+</style>
+</head>
+<body>
 
+<div id="home" class="screen active">
+  <h1>🏴‍☠️ 你是哪个海贼王角色？</h1>
+  <p class="sub">20 道题 · 五维性格分析 · 匹配适合你的职位</p>
+  <div class="dims"><span>⚓ 冒险精神</span><span>🛡️ 忠诚度</span><span>🧠 智慧谋略</span><span>🔥 热血冲动</span><span>💗 温柔共情</span></div>
+  <button class="btn-primary" onclick="startQuiz()">开始航行 →</button>
+</div>
+
+<div id="quiz" class="screen">
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    <p class="progress-count" id="progressCount">1 / 20</p>
+  </div>
+  <p class="q-title" id="qTitle"></p>
+  <div class="options" id="options"></div>
+</div>
+
+<div id="result" class="screen">
+  <p class="similarity" id="similarity"></p>
+  <h1 class="char-name" id="charName"></h1>
+  <p class="char-crew" id="charCrew"></p>
+  <div class="keywords" id="charKeywords"></div>
+  <h2 class="sec-title">你的五维性格</h2>
+  <canvas id="radar" width="300" height="300"></canvas>
+  <div class="score-list" id="scoreList"></div>
+  <h2 class="sec-title">💼 职位适配分析</h2>
+  <div class="career-card">
+    <span class="role-tag" id="careerRole"></span>
+    <div class="block"><h3>适合方向</h3><div class="jobs" id="careerJobs"></div></div>
+    <div class="block"><h3>工作风格</h3><p id="careerStyle"></p></div>
+    <div class="block"><h3>最佳搭档</h3><p id="careerPartner"></p></div>
+    <div class="block"><h3>避雷岗位</h3><p class="avoid" id="careerAvoid"></p></div>
+  </div>
+  <h2 class="sec-title">你也有点像…</h2>
+  <div class="other-list" id="otherList"></div>
+  <button class="btn-restart" onclick="restart()">🔄 再测一次</button>
+</div>
+
+<script>
+const DIMENSIONS = [
+  { key: 'adventure', label: '冒险精神' }, { key: 'loyalty', label: '忠诚度' },
+  { key: 'wisdom', label: '智慧谋略' }, { key: 'passion', label: '热血冲动' },
+  { key: 'empathy', label: '温柔共情' }
+];
+
+const QUESTIONS = [
+  { title: '看到一张没标注的藏宝图，你会？', options: [
+    { text: '立刻出发，路上再研究', scores: { adventure: 5, passion: 3 } },
+    { text: '先找可靠的人一起规划路线', scores: { wisdom: 4, loyalty: 2 } },
+    { text: '叫上伙伴，人多才安全', scores: { loyalty: 4, empathy: 2 } },
+    { text: '担心有陷阱，先观察再说', scores: { wisdom: 5 } }
+  ]},
+  { title: '伙伴被人欺负了，你的第一反应？', options: [
+    { text: '冲上去就打，谁怕谁', scores: { passion: 5, loyalty: 3 } },
+    { text: '先护住伙伴，再问清缘由', scores: { loyalty: 5, empathy: 3 } },
+    { text: '冷静收集证据，找机会反击', scores: { wisdom: 5, loyalty: 2 } },
+    { text: '安慰伙伴，别让ta难过', scores: { empathy: 5 } }
+  ]},
+  { title: '团队里你更愿意扮演？', options: [
+    { text: '拍板做决定的那个人', scores: { adventure: 4, passion: 3 } },
+    { text: '默默兜底、守住后方的人', scores: { loyalty: 5, wisdom: 2 } },
+    { text: '出主意、算风险的人', scores: { wisdom: 5 } },
+    { text: '调节气氛、照顾大家情绪的人', scores: { empathy: 5 } }
+  ]},
+  { title: '面对一个强大到打不过的敌人？', options: [
+    { text: '打不过也要打，绝不后退', scores: { passion: 5, adventure: 3 } },
+    { text: '先撤退保命，再找机会', scores: { wisdom: 5 } },
+    { text: '掩护伙伴先走，我断后', scores: { loyalty: 5, passion: 2 } },
+    { text: '想办法谈判或找外援', scores: { wisdom: 3, empathy: 2 } }
+  ]},
+  { title: '你向往的生活是？', options: [
+    { text: '无边大海，自由自在', scores: { adventure: 5, passion: 2 } },
+    { text: '和一群信任的人在一起', scores: { loyalty: 5, empathy: 2 } },
+    { text: '不断变强、站上顶点', scores: { passion: 4, wisdom: 2 } },
+    { text: '平静安稳，帮到别人', scores: { empathy: 5, wisdom: 2 } }
+  ]},
+  { title: '朋友做了个明显错误的决定，你会？', options: [
+    { text: '直接说“不行”，然后拉ta回来', scores: { passion: 4, loyalty: 3 } },
+    { text: '列出利弊，让ta自己选', scores: { wisdom: 5 } },
+    { text: '尊重ta的选择，陪着兜底', scores: { loyalty: 4, empathy: 3 } },
+    { text: '先理解ta为什么这么想', scores: { empathy: 5 } }
+  ]},
+  { title: '给你一个职位，你更想当？', options: [
+    { text: '船长——定方向、担责任', scores: { adventure: 4, passion: 3, loyalty: 2 } },
+    { text: '军师——出谋划策', scores: { wisdom: 5 } },
+    { text: '护航者——保护每个人', scores: { loyalty: 5, passion: 2 } },
+    { text: '船医/后勤——照顾大家', scores: { empathy: 5 } }
+  ]},
+  { title: '遇到陌生的岛屿，你第一个想？', options: [
+    { text: '冲上去看看有什么好玩的', scores: { adventure: 5, passion: 2 } },
+    { text: '确认补给和安全再行动', scores: { wisdom: 4, loyalty: 2 } },
+    { text: '找当地人聊聊、了解风土', scores: { empathy: 4, wisdom: 2 } },
+    { text: '和伙伴一起才肯下船', scores: { loyalty: 4, empathy: 2 } }
+  ]},
+  { title: '别人否定你的梦想时？', options: [
+    { text: '笑一笑，用行动证明', scores: { adventure: 4, passion: 3 } },
+    { text: '记在心里，早晚还回去', scores: { passion: 4, wisdom: 2 } },
+    { text: '不解释，继续走自己的路', scores: { wisdom: 4, adventure: 2 } },
+    { text: '会难过，但更想被理解', scores: { empathy: 5 } }
+  ]},
+  { title: '团队出现分歧时，你？', options: [
+    { text: '拍桌子定一个方向', scores: { passion: 4, adventure: 2 } },
+    { text: '分析各方立场找共识', scores: { wisdom: 5, empathy: 2 } },
+    { text: '站在自己人这边', scores: { loyalty: 5 } },
+    { text: '先安抚情绪再谈事', scores: { empathy: 5 } }
+  ]},
+  { title: '你最容易被打动的是？', options: [
+    { text: '一场说走就走的冒险', scores: { adventure: 5 } },
+    { text: '一句“我信你”', scores: { loyalty: 5, empathy: 2 } },
+    { text: '一个精妙的计划', scores: { wisdom: 5 } },
+    { text: '一个需要帮助的人', scores: { empathy: 5 } }
+  ]},
+  { title: '战斗中你更擅长？', options: [
+    { text: '正面硬刚、越战越勇', scores: { passion: 5, adventure: 2 } },
+    { text: '找破绽、一击制胜', scores: { wisdom: 5 } },
+    { text: '守护队友、挡住攻击', scores: { loyalty: 5, passion: 2 } },
+    { text: '鼓舞士气、稳住军心', scores: { empathy: 4, loyalty: 2 } }
+  ]},
+  { title: '你对“规则”的态度？', options: [
+    { text: '规则是给不敢闯的人定的', scores: { adventure: 5, passion: 2 } },
+    { text: '规则有用就遵守，没用就绕开', scores: { wisdom: 5 } },
+    { text: '答应过的事一定守', scores: { loyalty: 5 } },
+    { text: '规则应该保护弱者', scores: { empathy: 5 } }
+  ]},
+  { title: '拿到一笔意外之财，你会？', options: [
+    { text: '立刻花掉，开心最重要', scores: { passion: 4, adventure: 2 } },
+    { text: '存起来做长远打算', scores: { wisdom: 5 } },
+    { text: '分给伙伴和需要的人', scores: { loyalty: 4, empathy: 3 } },
+    { text: '请大家吃一顿', scores: { empathy: 4, passion: 2 } }
+  ]},
+  { title: '你最不能忍受？', options: [
+    { text: '被限制自由', scores: { adventure: 5 } },
+    { text: '被背叛', scores: { loyalty: 5 } },
+    { text: '被当傻子耍', scores: { wisdom: 5, passion: 2 } },
+    { text: '看到有人受苦却无能为力', scores: { empathy: 5 } }
+  ]},
+  { title: '深夜伙伴还没回来，你？', options: [
+    { text: '直接出去找', scores: { passion: 4, loyalty: 3 } },
+    { text: '分析可能去向再行动', scores: { wisdom: 5 } },
+    { text: '守在原地等，相信ta', scores: { loyalty: 5 } },
+    { text: '担心得睡不着', scores: { empathy: 5 } }
+  ]},
+  { title: '你怎么看待“变强”？', options: [
+    { text: '为了去更远的地方', scores: { adventure: 5 } },
+    { text: '为了保护想保护的人', scores: { loyalty: 5, passion: 2 } },
+    { text: '为了掌握主动权', scores: { wisdom: 4, passion: 2 } },
+    { text: '为了不再让谁受伤', scores: { empathy: 5 } }
+  ]},
+  { title: '聚会上你通常是？', options: [
+    { text: '气氛担当，最先嗨起来', scores: { passion: 5, adventure: 2 } },
+    { text: '默默观察，偶尔补刀', scores: { wisdom: 5 } },
+    { text: '照顾每个人的需求', scores: { empathy: 5, loyalty: 2 } },
+    { text: '拉着老朋友们聊天', scores: { loyalty: 5, empathy: 2 } }
+  ]},
+  { title: '面对未知的敌人情报，你？', options: [
+    { text: '先打一架试试水', scores: { passion: 4, adventure: 3 } },
+    { text: '侦察、收集信息再定', scores: { wisdom: 5 } },
+    { text: '确保伙伴安全是第一位', scores: { loyalty: 5 } },
+    { text: '想有没有不流血的办法', scores: { empathy: 5, wisdom: 2 } }
+  ]},
+  { title: '如果只能留下一个评价，你希望是？', options: [
+    { text: '“这家伙胆子真大”', scores: { adventure: 5 } },
+    { text: '“这人靠得住”', scores: { loyalty: 5 } },
+    { text: '“这人脑子真好使”', scores: { wisdom: 5 } },
+    { text: '“这人心里有别人”', scores: { empathy: 5 } }
+  ]}
+];
+
+const CHARACTERS = [
+  { name: '蒙奇·D·路飞', crew: '草帽团·船长', keywords: ['自由','直觉','感染力'], scores: { adventure:100, loyalty:90, wisdom:35, passion:95, empathy:70 }, career: { role:'愿景型领袖', suitableJobs:['创业公司创始人','团队Leader','品牌代言人'], workStyle:'目标感极强、敢拍板、能点燃团队，但不擅长细节与风控，需要靠谱搭档补位。', bestPartner:'娜美型（规划+风控）或罗宾型（信息+冷静）', avoid:'高度流程化、无自主权的岗位' } },
+  { name: '罗罗诺亚·索隆', crew: '草帽团·剑士', keywords: ['可靠','自律','沉默守护'], scores: { adventure:70, loyalty:100, wisdom:60, passion:75, empathy:55 }, career: { role:'定海神针型执行者', suitableJobs:['核心骨干','安保/风控负责人','技术专家'], workStyle:'话少事稳，承诺必达，关键时刻顶得住；不争功、不抢话。', bestPartner:'路飞型（给方向）或娜美型（给节奏）', avoid:'需要频繁社交、画大饼的岗位' } },
+  { name: '娜美', crew: '草帽团·航海士', keywords: ['精明','务实','掌控全局'], scores: { adventure:60, loyalty:80, wisdom:95, passion:60, empathy:65 }, career: { role:'战略规划者', suitableJobs:['CFO/财务负责人','项目经理','运营总监'], workStyle:'算得清、看得远，善于资源调配与风险控制，能把理想落地成计划。', bestPartner:'路飞型（提供愿景与冲劲）', avoid:'纯执行、无决策空间的岗位' } },
+  { name: '妮可·罗宾', crew: '草帽团·考古学家', keywords: ['冷静','洞察','深藏'], scores: { adventure:55, loyalty:75, wisdom:100, passion:40, empathy:75 }, career: { role:'情报与洞察专家', suitableJobs:['战略分析师','研究员','情报/尽调岗'], workStyle:'信息整合能力强，善于在复杂局面中看清本质，情绪稳定。', bestPartner:'路飞型（给信任与温度）', avoid:'需要高情绪外露、强推销的岗位' } },
+  { name: '山治', crew: '草帽团·厨师', keywords: ['绅士','细腻','牺牲感'], scores: { adventure:60, loyalty:85, wisdom:70, passion:70, empathy:90 }, career: { role:'服务型专家', suitableJobs:['产品经理（用户体验向）','主厨/餐饮主理人','客户成功'], workStyle:'对细节和体验极度敏感，愿意为他人付出，擅长把关怀做成产品。', bestPartner:'索隆型（互补的执行硬骨头）', avoid:'纯冷冰冰的数据岗、无温度的环境' } },
+  { name: '托尼托尼·乔巴', crew: '草帽团·船医', keywords: ['温柔','努力','治愈'], scores: { adventure:45, loyalty:85, wisdom:70, passion:55, empathy:100 }, career: { role:'治愈型支持者', suitableJobs:['医生/心理咨询师','HR/员工关怀','教育工作者'], workStyle:'共情力强，愿意为别人的成长投入，容易被需要感驱动。', bestPartner:'罗宾型（给理性框架）', avoid:'高压对抗、零和博弈的岗位' } },
+  { name: '乌索普', crew: '草帽团·狙击手', keywords: ['机智','胆怯又勇敢','创造力'], scores: { adventure:70, loyalty:75, wisdom:80, passion:65, empathy:70 }, career: { role:'创意型问题解决者', suitableJobs:['产品/创意策划','市场增长','发明/工程'], workStyle:'脑洞大、善用巧劲，关键时刻能爆发，适合非标准解法的问题。', bestPartner:'娜美型（给约束）或弗兰奇型（给落地）', avoid:'需要稳定重复输出的流水线岗位' } },
+  { name: '弗兰奇', crew: '草帽团·船匠', keywords: ['热血','动手','豪爽'], scores: { adventure:80, loyalty:80, wisdom:65, passion:85, empathy:60 }, career: { role:'工程落地者', suitableJobs:['技术负责人','硬件/工程','制作人'], workStyle:'想到就干、动手能力强，能把抽象想法变成实物。', bestPartner:'罗宾型（给设计）或乌索普型（给创意）', avoid:'纯纸面推演、无产出的岗位' } },
+  { name: '布鲁克', crew: '草帽团·音乐家', keywords: ['乐观','浪漫','陪伴'], scores: { adventure:65, loyalty:80, wisdom:60, passion:60, empathy:85 }, career: { role:'氛围与陪伴者', suitableJobs:['内容创作者','品牌/文化活动','用户社群运营'], workStyle:'用情绪价值凝聚人，擅长把苦日子过出浪漫。', bestPartner:'娜美型（给秩序）', avoid:'极度功利、只看KPI的岗位' } },
+  { name: '甚平', crew: '草帽团·舵手', keywords: ['稳重','大局','担当'], scores: { adventure:55, loyalty:95, wisdom:85, passion:50, empathy:80 }, career: { role:'稳健型管理者', suitableJobs:['COO/运营负责人','危机管理','政府/公共事务'], workStyle:'沉得住气、扛得起责，擅长在动荡中稳住船。', bestPartner:'路飞型（给冲劲）', avoid:'需要激进冒险、快进快出的岗位' } },
+  { name: '特拉法尔加·罗', crew: '超新星·心脏海贼团', keywords: ['冷静','算计','有底线'], scores: { adventure:65, loyalty:70, wisdom:95, passion:55, empathy:60 }, career: { role:'策略型操盘手', suitableJobs:['投资/并购','战略顾问','外科医生'], workStyle:'谋定后动，善于借势与交易，底线清晰但不轻易示人。', bestPartner:'路飞型（给意外性）', avoid:'需要无条件信任、纯感性的团队' } },
+  { name: '波雅·汉库克', crew: '七武海·九蛇', keywords: ['骄傲','强势','深情'], scores: { adventure:60, loyalty:75, wisdom:70, passion:85, empathy:65 }, career: { role:'强势型领导者', suitableJobs:['品牌主理人','销售/BD负责人','团队一号位'], workStyle:'气场强、执行力猛，认定的人和事会全力护住。', bestPartner:'甚平型（给稳）', avoid:'需要长期低调隐忍的岗位' } },
+  { name: '乔拉可尔·米霍克', crew: '七武海·世界第一剑豪', keywords: ['孤高','极致','自律'], scores: { adventure:50, loyalty:60, wisdom:90, passion:55, empathy:40 }, career: { role:'极致专业主义者', suitableJobs:['领域专家','独立顾问','艺术/技艺创作者'], workStyle:'追求极致、标准极高，独处效率最高，不迎合。', bestPartner:'索隆型（同类相惜）', avoid:'需要大量妥协与社交的岗位' } },
+  { name: '克洛克达尔', crew: '七武海·巴洛克工作社', keywords: ['野心','谋略','掌控'], scores: { adventure:70, loyalty:40, wisdom:90, passion:65, empathy:30 }, career: { role:'野心型操盘者', suitableJobs:['创业者','商业谈判','资源整合'], workStyle:'布局深、手段硬，目标至上，擅长把资源拧成一股绳。', bestPartner:'罗宾型（给信息）', avoid:'强调奉献、弱化个人回报的岗位' } },
+  { name: '多弗朗明戈', crew: '七武海·唐吉诃德家族', keywords: ['操控','魅力','危险'], scores: { adventure:75, loyalty:50, wisdom:90, passion:80, empathy:35 }, career: { role:'高魅力影响者', suitableJobs:['营销/公关','谈判专家','娱乐产业'], workStyle:'极懂人心、擅长造势，能快速聚拢资源，但需警惕边界。', bestPartner:'罗型（给理性刹车）', avoid:'需要高度合规、强监管的岗位' } },
+  { name: '斯摩格', crew: '海军', keywords: ['正直','固执','行动派'], scores: { adventure:60, loyalty:85, wisdom:65, passion:80, empathy:60 }, career: { role:'原则型执行者', suitableJobs:['合规/审计','执法','质量管理'], workStyle:'认死理、守底线，看不惯的事一定管，行动力强。', bestPartner:'青雉型（给弹性）', avoid:'灰色地带多、需要圆滑的岗位' } },
+  { name: '藤虎', crew: '海军大将', keywords: ['仁厚','大局','自省'], scores: { adventure:45, loyalty:80, wisdom:90, passion:45, empathy:95 }, career: { role:'价值观型决策者', suitableJobs:['公共政策','NGO负责人','企业社会责任'], workStyle:'以善为尺、看得远，愿意为更大的公平承担代价。', bestPartner:'斯摩格型（给执行）', avoid:'唯利是图、短视的岗位' } },
+  { name: '卡普', crew: '海军英雄', keywords: ['豪迈','随性','护短'], scores: { adventure:80, loyalty:90, wisdom:70, passion:85, empathy:70 }, career: { role:'元老型定心丸', suitableJobs:['资深顾问','导师/教练','团队精神领袖'], workStyle:'实力与资历服人，松弛但有底线，关键时刻一锤定音。', bestPartner:'战国型（给秩序）', avoid:'需要极度严谨文书工作的岗位' } },
+  { name: '青雉', crew: '海军前大将', keywords: ['松弛','正义感','旁观者'], scores: { adventure:65, loyalty:65, wisdom:85, passion:40, empathy:80 }, career: { role:'冷静观察者', suitableJobs:['研究员','独立顾问','风控'], workStyle:'不轻易站队，看得清也放得下，擅长在混乱中保持判断。', bestPartner:'斯摩格型（给热血）', avoid:'需要强立场、高对抗的岗位' } },
+  { name: '赤犬', crew: '海军元帅', keywords: ['绝对','强硬','执行'], scores: { adventure:50, loyalty:75, wisdom:80, passion:90, empathy:20 }, career: { role:'铁腕执行者', suitableJobs:['危机处置','强执行管理','纪律监察'], workStyle:'目标绝对、执行不留情，适合处理必须有人拍板的硬仗。', bestPartner:'黄猿型（给弹性）', avoid:'需要共情与柔性沟通的岗位' } },
+  { name: '黄猿', crew: '海军大将', keywords: ['散漫','深不可测','效率'], scores: { adventure:55, loyalty:55, wisdom:85, passion:30, empathy:45 }, career: { role:'高效执行者', suitableJobs:['专项任务执行','技术攻坚','外包型专家'], workStyle:'看着散漫，出手极快，擅长用最小力气解决关键问题。', bestPartner:'赤犬型（给压力）', avoid:'需要长期情绪投入的岗位' } },
+  { name: '香克斯', crew: '四皇·红发海贼团', keywords: ['气度','自由','守护'], scores: { adventure:85, loyalty:95, wisdom:80, passion:70, empathy:85 }, career: { role:'格局型领袖', suitableJobs:['创始人/董事长','行业领袖','外交/斡旋'], workStyle:'以气度聚人、以底线立威，懂得什么时候出手、什么时候放手。', bestPartner:'贝克曼型（给理性）', avoid:'斤斤计较、内耗严重的组织' } },
+  { name: '白胡子', crew: '四皇·白胡子海贼团', keywords: ['父性','包容','担当'], scores: { adventure:60, loyalty:100, wisdom:70, passion:65, empathy:95 }, career: { role:'大家长型领袖', suitableJobs:['组织一号位','导师','公益/家族企业'], workStyle:'把成员当家人护着，用担当换忠诚，气场厚重。', bestPartner:'马尔科型（给执行）', avoid:'冷酷裁员文化、纯数字导向的组织' } },
+  { name: '黑胡子', crew: '四皇·黑胡子海贼团', keywords: ['野心','赌徒','机会主义'], scores: { adventure:90, loyalty:30, wisdom:75, passion:85, empathy:25 }, career: { role:'高风险投机者', suitableJobs:['早期创业','交易员','增长黑客'], workStyle:'敢赌、嗅觉灵，能抓住窗口期，但需强合规与伙伴约束。', bestPartner:'罗型（给风控）', avoid:'需要长期信任积累的岗位' } },
+  { name: '波特卡斯·D·艾斯', crew: '白胡子团·二番队', keywords: ['炽热','重情','不服输'], scores: { adventure:85, loyalty:90, wisdom:50, passion:95, empathy:70 }, career: { role:'热血冲锋者', suitableJobs:['一线销售','创业者','竞技/体育'], workStyle:'情绪即燃料，重情重义，冲劲能带动一片人。', bestPartner:'甚平型（给冷静）', avoid:'需要长期忍耐、慢节奏的岗位' } },
+  { name: '萨博', crew: '革命军参谋总长', keywords: ['理想','谋略','行动'], scores: { adventure:75, loyalty:90, wisdom:85, passion:75, empathy:80 }, career: { role:'理想型组织者', suitableJobs:['公益组织负责人','政策推动','变革管理'], workStyle:'有理想也有方法，能把信念转成可执行的路线。', bestPartner:'罗宾型（给信息）', avoid:'纯维稳、拒绝改变的岗位' } },
+  { name: '马尔科', crew: '白胡子团·一番队', keywords: ['可靠','治愈','稳'], scores: { adventure:55, loyalty:95, wisdom:75, passion:55, empathy:90 }, career: { role:'兜底型副手', suitableJobs:['COO/二把手','运营支持','医疗/救援'], workStyle:'不抢镜、能兜底，团队缺什么补什么。', bestPartner:'白胡子型（给方向与信任）', avoid:'需要强个人曝光的岗位' } },
+  { name: '本·贝克曼', crew: '红发团·副船长', keywords: ['冷静','智囊','分寸'], scores: { adventure:60, loyalty:90, wisdom:100, passion:45, empathy:65 }, career: { role:'首席智囊', suitableJobs:['战略顾问','参谋长','合伙人'], workStyle:'看得透、说得少，负责把领袖的直觉翻译成可执行方案。', bestPartner:'香克斯型（给愿景）', avoid:'需要前台表演的岗位' } }
+];
+
+let current = 0;
+let answers = [];
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startQuiz() {
+  current = 0;
+  answers = [];
+  showScreen('quiz');
+  renderQuestion();
+}
+function restart() { startQuiz(); }
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  document.getElementById('progressBar').style.width = ((current) / QUESTIONS.length * 100) + '%';
+  document.getElementById('progressCount').textContent = (current + 1) + ' / ' + QUESTIONS.length;
+  document.getElementById('qTitle').textContent = q.title;
+  const box = document.getElementById('options');
+  box.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt' + (answers[current] === i ? ' selected' : '');
+    btn.innerHTML = '<span class="tag">' + String.fromCharCode(65 + i) + '</span>' + opt.text;
+    btn.onclick = () => chooseOption(i);
+    box.appendChild(btn);
+  });
+}
+
+function chooseOption(i) {
+  answers[current] = i;
+  document.querySelectorAll('.opt').forEach((el, idx) => { el.classList.toggle('selected', idx === i); });
+  setTimeout(() => {
+    if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
+    else { finishQuiz(); }
+  }, 250);
+}
+
+function calcScores() {
+  const raw = { adventure:0, loyalty:0, wisdom:0, passion:0, empathy:0 };
+  answers.forEach((optIdx, qIdx) => {
+    const opt = QUESTIONS[qIdx].options[optIdx];
+    if (!opt) return;
+    for (const k in opt.scores) raw[k] += opt.scores[k];
+  });
+  const max = Math.max(...Object.values(raw), 1);
+  const out = {};
+  DIMENSIONS.forEach(d => { out[d.key] = Math.round(raw[d.key] / max * 100); });
+  return out;
+}
+
+function matchCharacter(scores) {
+  const dist = c => {
+    let sum = 0;
+    DIMENSIONS.forEach(d => { const diff = scores[d.key] - c.scores[d.key]; sum += diff * diff; });
+    return Math.sqrt(sum);
+  };
+  const sorted = CHARACTERS.slice().sort((a, b) => dist(a) - dist(b));
+  const maxDist = Math.sqrt(5 * 100 * 100);
+  return { main: sorted[0], others: sorted.slice(1, 3), similarity: Math.round(100 - dist(sorted[0]) / maxDist * 100) };
+}
+
+function finishQuiz() {
+  const scores = calcScores();
+  const { main, others, similarity } = matchCharacter(scores);
+  document.getElementById('similarity').textContent = '匹配度 ' + similarity + '%';
+  document.getElementById('charName').textContent = main.name;
+  document.getElementById('charCrew').textContent = main.crew;
+  document.getElementById('charKeywords').innerHTML = main.keywords.map(k => '<span>#' + k + '</span>').join('');
+  document.getElementById('scoreList').innerHTML = DIMENSIONS.map(d => '<div class="score-item"><span>' + d.label + '</span><div class="track"><div class="fill" style="width:' + scores[d.key] + '%"></div></div><span class="num">' + scores[d.key] + '</span></div>').join('');
+  document.getElementById('careerRole').textContent = main.career.role;
+  document.getElementById('careerJobs').innerHTML = main.career.suitableJobs.map(j => '<span>' + j + '</span>').join('');
+  document.getElementById('careerStyle').textContent = main.career.workStyle;
+  document.getElementById('careerPartner').textContent = main.career.bestPartner;
+  document.getElementById('careerAvoid').textContent = main.career.avoid;
+  document.getElementById('otherList').innerHTML = others.map(c => '<div class="other-card"><h3>' + c.name + '</h3><p>' + c.crew + '</p><div class="keywords">' + c.keywords.map(k => '<span>#' + k + '</span>').join('') + '</div></div>').join('');
+  drawRadar(scores);
+  showScreen('result');
+}
+
+function drawRadar(scores) {
+  const canvas = document.getElementById('radar');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2, R = 95;
+  const n = DIMENSIONS.length;
+  ctx.clearRect(0, 0, W, H);
+  const angleAt = i => (Math.PI * 2 * i / n) - Math.PI / 2;
+  [0.25, 0.5, 0.75, 1].forEach(scale => {
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const a = angleAt(i); const x = cx + Math.cos(a) * R * scale; const y = cy + Math.sin(a) * R * scale;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath(); ctx.strokeStyle = 'rgba(201,168,106,0.4)'; ctx.stroke();
+  });
+  for (let i = 0; i < n; i++) {
+    const a = angleAt(i);
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+    ctx.strokeStyle = 'rgba(201,168,106,0.4)'; ctx.stroke();
+  }
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const a = angleAt(i); const r = scores[DIMENSIONS[i].key] / 100 * R;
+    const x = cx + Math.cos(a) * r; const y = cy + Math.sin(a) * r;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.closePath(); ctx.fillStyle = 'rgba(192,57,43,0.35)'; ctx.fill();
+  ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2; ctx.stroke();
+  for (let i = 0; i < n; i++) {
+    const a = angleAt(i); const r = scores[DIMENSIONS[i].key] / 100 * R;
+    const x = cx + Math.cos(a) * r; const y = cy + Math.sin(a) * r;
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#c0392b'; ctx.fill();
+  }
+  ctx.font = '12px -apple-system, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let i = 0; i < n; i++) {
+    const a = angleAt(i); const x = cx + Math.cos(a) * (R + 20); const y = cy + Math.sin(a) * (R + 20);
+    ctx.fillStyle = '#c9a86a'; ctx.fillText(DIMENSIONS[i].label, x, y);
+  }
+}
+</script>
+</body>
+</html>
+ 
